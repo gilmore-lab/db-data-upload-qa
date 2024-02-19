@@ -1,0 +1,77 @@
+---
+title: "qa-files-metadata"
+author: "Andrea Seisler"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Now compare .csv filenames to filenames shared in OneDrive
+
+# 0. Required Libraries
+
+```{r}
+library(dplyr)
+library(databraryr)
+library(compareDF)
+library(stringr)
+```
+
+# 2. Read Metadata File
+```{r }
+metadata <- read.csv("~/Documents/spencer-curation/ALPS-demographics-2023-05-31v01.csv")
+metadata.all.df <- as.data.frame(metadata)
+
+# Select Required Columns Only
+metadata.required.df <- dplyr::select(metadata.all.df, Audio_sample.mp3,Oral_Transcribed_sample.txt, Written_Transcribed_Sample_As.Written.txt,  Written_Transcribed_Sample_Interpretted.txt, PDF_written.pdf)
+
+#Convert DF to a single list
+metadata.list <- unlist(metadata.required.df, use.names = FALSE)
+
+# remove "" from list
+metadata.list <- as.character(metadata.list[metadata.list!=""])
+```
+
+# 3.  Read uploaded data files (e.g. .mp3/.txt/.pdf) and Compare to metadata list
+```{r}
+source("~/Documents/R/db-data-upload-qa/id_missing.R")
+
+missing.files <- purrr::map2(rep(c("EGO", "EGW", "ERO", "ERW", "NGO", "NGW", "NRO", "NRW"),4), rep(c("K","1","2","3"),8),id_missing)
+
+#purrr::list_rbind(missing.files$comparison_df)
+
+```
+
+# 4. Print Missing Files to Screen
+# Ultimately I want to export the list of files to a .csv
+```{r}
+for (i in 1:32){
+  print(missing.files[[i]][["comparison_df"]])
+}
+```
+
+#purrr::list_rbind(missing.files[[i]][["comparison_df"]])
+
+#write.csv(this.df, "~/Documents/spencer-curation/missingFiles-", i, ".csv")
+
+# 5. Print all missing files to output file
+
+```{r}
+all.missing.files = data.frame()
+for (i in 1:32){
+  temp.missing.files <- as.data.frame(missing.files[[i]][["comparison_df"]])
+  all.missing.files <- rbind(all.missing.files,temp.missing.files)
+}
+
+write.csv(all.missing.files, "~/Documents/spencer-curation/missingFiles.csv")
+
+```
+
+
+# - means On OneDrive/Databrary, NOT in .csv file
+# + means in .csv file, NOT on OneDrive/Databrary
+
+

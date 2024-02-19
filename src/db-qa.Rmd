@@ -1,0 +1,101 @@
+---
+title: "Databrary QA"
+author: "Andrea Seisler"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+library(dplyr)
+library(databraryr)
+library(compareDF)
+library(stringr)
+
+# On mac, make sure to change case of file extensions to all lower case by running the below command in the terminal window. 
+
+#### find . -type f -name "*.MP3" -exec sh -c 'mv "$1" "${1%.MP3}.mp3"' _ {} \;
+
+
+# How can I ask to enter the values for items w/in this code?
+# pattern = "K_ERO" want to Enter pattern
+# folder "Databrary ERO" want to enter that portion of the file location
+# session id = ""
+# variable name = s_"sessionid"
+
+# session slot - Is is possible to look up the session folder name + the session ID?
+
+# Find list of files on computer
+
+list.files("~/Documents/spencer-curation/Databrary NGO/", pattern = "1_NGO") -> source
+df_source <- as.data.frame(source)
+colnames(df_source)[1] <- "name"
+
+
+# Find the list of files in a given session on Databrary: use Databrary API
+
+# Open RStudio
+
+# 0. Update databraryr package
+
+update.packages('databraryr')
+
+
+# 1. Login
+# If the following returns TRUE, then you are good to go to step 2.
+
+databraryr::login_db(email = Sys.getenv("DATABRARY_LOGIN"), store = TRUE)
+
+
+# If that code did not work, try entering your email and password explicitly...
+#databraryr::login_db(email = "", password = "")
+
+# Or let the function prompt you.
+#databraryr::login_db()
+
+#2 Download the session info you want (replace the "" with your session_id)
+
+# https://nyu.databrary.org/volume/1632/slot/69319/-
+
+#databraryr::list_assets_in_session(session_id = "")
+
+# assign to a session variable - this is a vector
+
+databraryr::list_assets_in_session(session_id = 69326, vb = TRUE) -> s_databrary
+
+# the extension needs to be pasted onto the filename (this is one column from dataframe) from Databrary
+
+paste0(s_databrary$name,".",s_databrary$extension) -> name
+
+#Convert DB file from vector to data frame
+
+df_databrary <- as.data.frame(name)
+
+
+# How do I ignore case (e.g. MP3 vs. mp3) when comparing?
+  
+#Find which files are missing from df2 when comparing to df1 compare_df(dfnew, df2old, c("name"))
+
+
+ctable_name = compare_df(df_databrary, df_source, c("name"))
+ctable_name$comparison_df
+
+
+# Check for multpiles of the same file
+
+n_occur <- data.frame(table(df_databrary$name))
+n_occur[n_occur$Freq > 1,]
+
+
+# Search for missing file on computer, then manually copy into the correct session in Databrary.
+
+# After transcoding is complete
+
+# Run s_databrary section again
+
+# Ensure that the compareDF function has 0 differences or "The two dataframes are similar after reordering"
+
+

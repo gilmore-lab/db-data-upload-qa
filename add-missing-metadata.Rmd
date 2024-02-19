@@ -1,0 +1,25 @@
+---
+title: "add-missing-metadata"
+author: "Andrea Seisler"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Now compare add missing metadata to file based upon files uploaded to Databrary
+
+# 0. Required Libraries
+
+```{r}
+library(dplyr)
+library(databraryr)
+library(compareDF)
+library(stringr)
+```
+
+# 2. Read Metadata File
+```{r }
+metadata <- read.csv("~/Documents/R/db-data-upload-qa/ALPS-demographics-2023-05-31v01.csv")
+metadata.all.df <- as.data.frame(metadata)
